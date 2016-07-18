@@ -9,8 +9,8 @@ class Stats:
 
 	def __init__(self, filename):
 		df = pd.read_csv(filename, sep='\t')
-		self.clusters = self.lengths = df.Clustered
-		#self.clusters = self.lengths = pd.Series(np.arange(1,11,1))
+		#self.clusters = self.lengths = df.Clustered
+		self.clusters = self.lengths = pd.Series(np.arange(1,11,1))
 
 
 	#Total clusters from PandaSeq output
@@ -25,7 +25,6 @@ class Stats:
 	def NValue(self, n):
 
 		numlist = self.lengths.tolist()
-		#numlist = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
 
 		#Making file data useful (sorting)
 		newlist = []
@@ -35,6 +34,8 @@ class Stats:
 		newlist.sort(reverse = True)
 		i = float(n)/100.0
 		medianpos = int(float(len(newlist)) * i)
+		if i == 1:
+			medianpos -= 1
 		return newlist[medianpos]
 
 	def N50(self):
@@ -47,7 +48,7 @@ class Stats:
 	#The smallest value above the N50 threshold
 	def nNValue(self, n):
 		n = self.NValue(n)
-		return [self.lengths[self.lengths>=n].count(), n]
+		return [n, self.lengths[self.lengths>=n].count()]
 
 	def nN50(self):
 		n = self.N50()
