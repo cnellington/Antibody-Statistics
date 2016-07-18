@@ -1,5 +1,6 @@
 import sys
-import pandas
+import pandas as pd
+import numpy as np
 
 class Stats:
 
@@ -7,8 +8,9 @@ class Stats:
 	lengths = 0
 
 	def __init__(self, filename):
-		df = pandas.read_csv(filename, sep='\t')
+		df = pd.read_csv(filename, sep='\t')
 		self.clusters = self.lengths = df.Clustered
+		#self.clusters = self.lengths = pd.Series(np.arange(1,11,1))
 
 
 	#Total clusters from PandaSeq output
@@ -19,42 +21,49 @@ class Stats:
 	#Returns Big N50 cluster analysis
 	#The number of clusters constituting the top 50 percent
 	#of the total mass of clusters
-	def N50(self):
+	#Variable N value analysis
+	def NValue(self, n):
 
 		numlist = self.lengths.tolist()
+		#numlist = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
 
 		#Making file data useful (sorting)
-		numlist.sort()
 		newlist = []
 		for x in numlist:
 			newlist += [x]*x
 
-		#returning N50 value
-		if len(newlist) % 2 == 0:
-			medianpos = len(newlist)/2
-			return float(newlist[medianpos] + newlist[medianpos-1]) / 2
-		else:
-			medianpos = len(newlist)/2
-			return newlist[medianpos]
+		newlist.sort(reverse = True)
+		i = float(n)/100.0
+		medianpos = int(float(len(newlist)) * i)
+		return newlist[medianpos]
 
+	def N50(self):
+		return self.NValue(50.0)
+
+	def N90(self):
+		return self.NValue(90.0)
 
 	#Returns Little n50 cluster analysis
 	#The smallest value above the N50 threshold
-	def n50(self):
+	def nNValue(self, n):
+		n = self.NValue(n)
+		return [self.lengths[self.lengths>=n].count(), n]
 
+	def nN50(self):
 		n = self.N50()
+		return [self.lengths[self.lengths>=n].count(), n]
 
-		#return n50 value
-		return self.lengths[self.lengths>n].count()
-
+	def nN90(self):
+		n = self.N90()
+		return [self.lengths[self.lengths>=n].count(), n]
 
 	#Returns the percent above the N50 threshold showing
 	#data accuracy
-	def percent(self):
+	def NValuePercent(self, n):
 
 		#Get n50 and total clusters
-		littleN50 = self.n50()
+		littleN = self.nNValue(n)[0]
 		total = self.totalClusters()
 
 		#return percentage
-		return float(littleN50)/float(total)*100
+		return float(littleN)/float(total)*100
