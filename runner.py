@@ -11,3 +11,4 @@ print "[NValue, nNValue]"
 for x in range(10,101, 10):
 	print ("N%s"+str(s.nNValue(x))) % x
 	print(s.NValuePercent(x))
+s.NPlot()
