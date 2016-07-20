@@ -1,16 +1,19 @@
 import sys
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+
 
 class Stats:
 
 	clusters = 0
 	lengths = 0
+	nvalues = []
 
 	def __init__(self, filename):
 		df = pd.read_csv(filename, sep='\t')
-		#self.clusters = self.lengths = df.Clustered
-		self.clusters = self.lengths = pd.Series(np.arange(1,11,1))
+		self.clusters = self.lengths = df.Clustered
+		#self.clusters = self.lengths = pd.Series(np.arange(1,11,1))
 
 
 	#Total clusters from PandaSeq output
@@ -46,8 +49,8 @@ class Stats:
 
 	#Returns Little n50 cluster analysis
 	#The smallest value above the N50 threshold
-	def nNValue(self, n):
-		n = self.NValue(n)
+	def nNValue(self, x):
+		n = self.NValue(x)
 		return [n, self.lengths[self.lengths>=n].count()]
 
 	def nN50(self):
@@ -57,6 +60,16 @@ class Stats:
 	def nN90(self):
 		n = self.N90()
 		return [self.lengths[self.lengths>=n].count(), n]
+
+	def NPlot(self):
+		xaxis = np.arange(0,101).tolist()
+		nvalues = []
+		for x in xaxis:
+			nvalues.append(self.NValue(x))
+		plt.plot(xaxis, nvalues)
+		plt.axis([-5, xaxis[len(xaxis)-1]+5, -5, nvalues[0]+50 ])
+		plt.show()
+		print "plot has been produced"
 
 	#Returns the percent above the N50 threshold showing
 	#data accuracy
