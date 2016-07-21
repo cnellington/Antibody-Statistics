@@ -6,15 +6,17 @@ import matplotlib.pyplot as plt
 
 class Stats:
 
-	clusters = 0
-	lengths = 0
-	nvalues = []
+	clusters = None #arange object
+	lengths = None #list object
+	nvalues = [] #stored Nvalues 0-100 to cut down on Nvalue usage/runtime (values added with NPlot() or getAllNValues())
+	allvalues = False #has getAllNValues been run
 
 	def __init__(self, filename):
 		df = pd.read_csv(filename, sep='\t')
 		self.clusters = self.lengths = df.Clustered
-		#self.clusters = self.lengths = pd.Series(np.arange(1,11,1))
-
+		#self.clusters = self.lengths = pd.Series(np.arange(1,11,1)) #Test arange for NValues
+		self.lengths.tolist().sort(reverse = True)
+		
 
 	#Total clusters from PandaSeq output
 	def totalClusters(self):
@@ -27,19 +29,26 @@ class Stats:
 	#Variable N value analysis
 	def NValue(self, n):
 
-		numlist = self.lengths.tolist()
+		#find a new NValue
+		if(not self.allvalues):
+			numlist = self.lengths.tolist() #New list object transfer (idk if python messes with pointers, just to be safe)
 
-		#Making file data useful (sorting)
-		newlist = []
-		for x in numlist:
-			newlist += [x]*x
+			#Making file data useful (sorting)
+			newlist = []
+			for x in numlist:
+				newlist += [x]*x
 
-		newlist.sort(reverse = True)
-		i = float(n)/100.0
-		medianpos = int(float(len(newlist)) * i)
-		if i == 1:
-			medianpos -= 1
-		return newlist[medianpos]
+			#newlist.sort(reverse = True) #Uncomment if clusters = lengths
+			i = float(n)/100.0
+			medianpos = int(float(len(newlist)) * i)
+			if i == 1:
+				medianpos -= 1
+			return newlist[medianpos]
+
+		#use existing NValue
+		else:
+			return self.nvalues[int(n)]
+
 
 	def N50(self):
 		return self.NValue(50.0)
@@ -62,14 +71,31 @@ class Stats:
 		return [self.lengths[self.lengths>=n].count(), n]
 
 	def NPlot(self):
-		xaxis = np.arange(0,101).tolist()
-		nvalues = []
-		for x in xaxis:
-			nvalues.append(self.NValue(x))
-		plt.plot(xaxis, nvalues)
-		plt.axis([-5, xaxis[len(xaxis)-1]+5, -5, nvalues[0]+50 ])
+		if(not self.allvalues):
+			self.getAllNValues()
+		xaxis = range(1,101)
+
+		buff = .05 #determines how close the plot is to the axes
+		xbuffer = int(xaxis[len(xaxis)-1]*buff) #x-axis buffer for clarity
+		ybuffer = int(self.nvalues[0]*buff) #y-axis buffer for clarity
+		
+		plt.ylabel("Cluster Size")
+		plt.xlabel("N value (smallest cluster above n percent mass)")
+		plt.plot(xaxis, self.nvalues[1:])
+		plt.axis([0-xbuffer, 100+xbuffer, 0-ybuffer, self.nvalues[0]+ybuffer ]) #plot axes, buffers added to both limits
+		
+		print("\nplotting graph...\n")
 		plt.show()
+
+		#finish
 		print "plot has been produced"
+
+	#Store N values so NValues() doesn't have to keep being called
+	def getAllNValues(self):
+		print("\ncalculating all N Values, this may take a second...\n")
+		for x in range(0,101):
+			self.nvalues.append(self.NValue(x))
+		self.allvalues = True #Set allvalues to true, save time in other methods
 
 	#Returns the percent above the N50 threshold showing
 	#data accuracy
