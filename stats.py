@@ -158,7 +158,7 @@ class Stats:
 		#finish
 		print "plot has been produced"
 
-	def testPlot(self, nplot, littlenplot):
+	def crossPlot(self, nplot, littlenplot):
 
 		if(not nplot and not littlenplot):
 			print("\nWhat are you doing, you silly sausage?\nPlot something next time.")
@@ -190,5 +190,30 @@ class Stats:
 			for t1 in ax2.get_yticklabels():
 				t1.set_color('r')
 
+			print "N Plot Average Slope: %s"%(self.avgSlope(xaxis, self.nvalues[1:]))
+			print "n Plot Average Slope: %s"%(self.avgSlope(xaxis, littlenvalues))
 			print("\nplotting graph...")
 			plt.show()
+
+				#avgSlope(self, xaxis, yaxis) or
+				#avgSlope(self, x1, x2, y1, y2)
+	def avgSlope(*args):
+		if len(args) == 3:
+			xaxis, yaxis = args[1], args[2]
+			x1 = float(xaxis[0])
+			x2 = float(xaxis[len(xaxis)-1])
+			y1 = float(yaxis[0])
+			y2 = float(yaxis[len(yaxis)-1])
+			return (y2-y1)/(x2-x1) #Because calculus
+
+		if len(args) == 5:
+			x1, x2, y1, y2 = args[1:]
+			return float(y2-y1)/float(x2-x1) #Because calculus
+
+	def simpsonDiversity(self):
+		D = 0.0
+		N = float(len(self.clusters))
+		for n in self.clusters:
+			D += (float(n)/N)**2 #Simpson Diversity Index formula
+
+		return D
