@@ -44,7 +44,7 @@ class stats:
 					tally[gene] += 1
 				else:
 					tally.update({gene:1})
-		return tally
+		return OrderedDict(sorted(tally.items(),key=lambda t: t[0]))
 
 
 	#Get read element chain type
@@ -145,15 +145,23 @@ class stats:
 		print("************************************************************\n")
 		
 		#Getting which reads to check for
-		sorted(geneplot.items(),key=lambda t: t[0]))
-		vcount = OrderedDict(sorted(self.geneCount(self.vlist)
+		vcount = self.geneCount(self.vlist)
 		jcount = self.geneCount(self.jlist)
 		vjlist = []
+
+		for key, val in vcount.iteritems():
+			if val <= int(sum(vcount.values())*.01):
+				del vcount[key]
+
+		for key, val in jcount.iteritems():
+			if val <= int(sum(jcount.values())*.01):
+				del jcount[key]
+
 
 		for x in range(len(vcount)):
 			vjlist.append([])
 			for y in range(len(jcount)):
-				vjlist.append(0)
+				vjlist[x].append(0)
 
 		#2D dict for storing gene hits
 		#jaxis = {key:0 for key, val in jcount.iteritems()}
@@ -163,7 +171,30 @@ class stats:
 		for x in range(len(self.vlist)):
 			vgene = self.vlist[x][0]
 			jgene = self.jlist[x][0]
-			vjlist[vcount.index(vgene)][jcount.index(jgene)] += 1
+			if vgene in vcount.keys() and jgene in jcount.keys():
+				vi = vcount.keys().index(vgene)
+				ji = jcount.keys().index(jgene)
+			else:
+				vi = -1
+				ji = -1
+			if vgene != '' and jgene != '' and vi > -1 and ji >-1:
+				vjlist[vi][ji] += 1
+
+		#Make each number a percent of total reads in the v/j array
+		readsum = sum(map(sum, vjlist))
+		for x in range(len(vcount)):
+			for y in range(len(jcount)):
+				vjlist[x][y] = float(vjlist[x][y])/float(readsum)
 
 		for x in vjlist:
 			print x
+
+		print readsum
+		
+		fig = plt.figure()
+		plt.imshow(vjlist, interpolation='none', aspect=1/1, vmin=0, vmax=1)
+		plt.yticks(range(len(vcount)), vcount.keys()) #some error about self._edgecolors == 'face'?
+		plt.xticks(range(len(jcount)), jcount.keys())
+		plt.jet()
+		plt.colorbar()
+		plt.show()
