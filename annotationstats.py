@@ -92,7 +92,7 @@ class stats:
 		return chains[random.randrange(0,index)]
 
 	#Read usage bar plot from single list (v, d, j)
-	def barPlot(self, datalist, threshold):
+	def barPlot(self, datalist, threshold, figname):
 
 		tally = self.geneCount(datalist)
 
@@ -117,21 +117,33 @@ class stats:
 		plt.setp(labels, rotation=90)
 		plt.show()
 
+		fig.savefig(figname)
+		print("Saved bar plot as: "+figname)
+
 	def Vgene_usage(self, **keyargs):
 		print("************************************************************")
 		print("*****************CREATING V GENE USAGE PLOT*****************")
 		print("************************************************************\n")
 
 		th = 0
+		name = "Vgene_bar.png"
 		if('threshold' in keyargs):
 			th = float(keyargs['threshold'])
-		self.barPlot(self.vlist, th)
+		if('figname' in keyargs):
+			name = keyargs['figname']+"_"+name
+		self.barPlot(self.vlist, th, name)
 
 	def Jgene_usage(self):
 		print("************************************************************")
 		print("*****************CREATING J GENE USAGE PLOT*****************")
 		print("************************************************************\n")
 
+		th = 0
+		name = "Jgene_bar.png"
+		if('threshold' in keyargs):
+			th = float(keyargs['threshold'])
+		if('figname' in keyargs):
+			name = keyargs['figname']+"_"+name
 		self.barPlot(self.jlist)
 
 	def Dgene_usage(self):
@@ -139,6 +151,12 @@ class stats:
 		print("*****************CREATING D GENE USAGE PLOT*****************")
 		print("************************************************************\n")
 
+		th = 0
+		name = "Dgene_bar.png"
+		if('threshold' in keyargs):
+			th = float(keyargs['threshold'])
+		if('figname' in keyargs):
+			name = keyargs['figname']+"_"+name
 		self.barPlot(self.dlist)
 
 	#Creates a heatmap graph of the V and J gene pairings
@@ -192,11 +210,6 @@ class stats:
 		for x in range(len(vcount)):
 			for y in range(len(jcount)):
 				vjlist[x][y] = float(vjlist[x][y])/float(readsum)
-
-		for x in vjlist:
-			print x
-
-		print readsum
 		
 		fig = plt.figure()
 		plt.imshow(vjlist, interpolation='none', aspect=1/1, vmin=0, vmax=1)
@@ -205,3 +218,10 @@ class stats:
 		plt.jet()
 		plt.colorbar()
 		plt.show()
+		if('figname' in keyargs):
+			name = keyargs['figname']+"_VJ_heatmap.png"
+			fig.savefig(keyargs['figname']+"_VJ_heatmap.png")
+			print('Saved heatmap plot as: '+name)
+		else:
+			fig.savefig("VJ_heatmap.png")
+			print('Saved heatmap plot as: VJ_heatmap.png')
