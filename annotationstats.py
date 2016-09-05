@@ -92,14 +92,14 @@ class stats:
 		return chains[random.randrange(0,index)]
 
 	#Read usage bar plot from single list (v, d, j)
-	def barPlot(self, datalist):
+	def barPlot(self, datalist, threshold):
 
 		tally = self.geneCount(datalist)
 
 		#Limit the items plotted to those over 1% of the read mass
 		geneplot = defaultdict()
 		for g, n in tally.iteritems():
-			if n > int(sum(tally.values())*.01):
+			if n > int(sum(tally.values())*threshold):
 				geneplot[g] = n
 
 		#Get plotting values
@@ -117,12 +117,15 @@ class stats:
 		plt.setp(labels, rotation=90)
 		plt.show()
 
-	def Vgene_usage(self):
+	def Vgene_usage(self, **keyargs):
 		print("************************************************************")
 		print("*****************CREATING V GENE USAGE PLOT*****************")
 		print("************************************************************\n")
 
-		self.barPlot(self.vlist)
+		th = 0
+		if('threshold' in keyargs):
+			th = float(keyargs['threshold'])
+		self.barPlot(self.vlist, th)
 
 	def Jgene_usage(self):
 		print("************************************************************")
@@ -139,23 +142,27 @@ class stats:
 		self.barPlot(self.dlist)
 
 	#Creates a heatmap graph of the V and J gene pairings
-	def V_J_heatmap(self):
+	def V_J_heatmap(self, **keyargs):
 		print("************************************************************")
 		print("*****************CREATING V/J GENE HEATMAP******************")
 		print("************************************************************\n")
 		
-		#Getting which reads to check for
+		#Getting which reads to check for		
 		vcount = self.geneCount(self.vlist)
 		jcount = self.geneCount(self.jlist)
 		vjlist = []
 
-		for key, val in vcount.iteritems():
-			if val <= int(sum(vcount.values())*.01):
-				del vcount[key]
+		#Checking for a threshold to clean data
+		if('threshold' in keyargs):
+			th = float(keyargs['threshold'])
+			if(th >= 0 and th < 1):
+				for key, val in vcount.iteritems():
+					if val <= int(sum(vcount.values())*th):
+						del vcount[key]
 
-		for key, val in jcount.iteritems():
-			if val <= int(sum(jcount.values())*.01):
-				del jcount[key]
+				for key, val in jcount.iteritems():
+					if val <= int(sum(jcount.values())*th):
+						del jcount[key]
 
 
 		for x in range(len(vcount)):
